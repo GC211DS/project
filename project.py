@@ -8,7 +8,6 @@ Member: (학번) 배성재
 
 # =========================== Library ===========================
 ### Step 1. Import the libraries
-from datetime import time
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
