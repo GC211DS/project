@@ -11,6 +11,7 @@ Member: (학번) 배성재
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+
 # =========================== Function ===========================
 """
 Name: drop_before_2020
