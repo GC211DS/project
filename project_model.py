@@ -86,46 +86,49 @@ df.drop(['Unnamed: 0'], axis=1, inplace=True)
 
 #scaling & drop data
 standardScaler = StandardScaler()
-standardScaler.fit(df.drop(['confirmed','date','time'],axis = 1))
-x_scaled = standardScaler.transform(df.drop(['confirmed','date','time'],axis = 1))
+# standardScaler.fit(df.drop(['confirmed','date','time'],axis = 1))
+x_scaled = standardScaler.fit_transform(df.drop(['confirmed','date','time'],axis = 1))
 #x_scaled = df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1)
-print(df.drop(['confirmed','date','time'],axis = 1).columns)
+columns = df.drop(['confirmed','date','time'],axis = 1).columns
 
+df_scaled = pd.DataFrame(x_scaled, columns=columns)
 
-
-location = df['code'].drop_duplicates().to_numpy()
-
-for i in range(0, len(location)):
-    dft = df[df['code'] == location[i]]
-    print(dft)
-
-    # Heatmap code
-    corrMat = dft.corr()
-    feature = corrMat.index
-    ax = plt.axes()
-    ax.set_title(location[i])
-    
-    plt.figure(figsize=(11,11))
-    g = sns.heatmap(dft[feature].corr(), annot=True, cmap="RdYlGn", ax = ax)
-    
-    plt.show()
+location = df_scaled['code'].drop_duplicates().to_numpy()
 
 
 # 1. 지역별로 테이블 분해
-# 2. 온도를 비교하여 분석
+for i in range(0, len(location)):
+    dft = df_scaled[df_scaled['code'] == location[i]]
+    dfy = df[df_scaled['code'] == location[i]]
+    dfy = dfy['confirmed']
+    print(dfy)
+    # 지역 내 누적값.
+    # 지역별로 Preprocessing 다시 해야 함.
 
-#split data set
-# x_train, x_test, y_train, y_test = train_test_split(x_scaled, df['confirmed'], test_size=0.2, shuffle=True, random_state=34)
+    # # Heatmap code
+    # corrMat = dft.corr()
+    # feature = corrMat.index
+    # ax = plt.axes()
+    # ax.set_title(location[i])
+    
+    # plt.figure(figsize=(11,11))
+    # g = sns.heatmap(dft[feature].corr(), annot=True, cmap="RdYlGn", ax = ax)
+    
+    # plt.show()
 
+    # # 2. 온도를 비교하여 분석
 
-# #linear regression
-# model = LinearRegression()
-# model.fit(x_train, y_train)
-# print("linear regression score : " ,model.score(x_test,y_test))
-# print(model.coef_)
+    # # split data set
+    # x_train, x_test, y_train, y_test = train_test_split(dft, df['confirmed'], test_size=0.2, shuffle=True, random_state=34)
 
-# coefplot(model.coef_, df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
-# scatterplot(y_test,model.predict(x_test),x_test)
+    # #linear regression
+    # model = LinearRegression()
+    # model.fit(x_train, y_train)
+    # print("linear regression score : " ,model.score(x_test,y_test))
+    # print(model.coef_)
+
+    # coefplot(model.coef_, df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
+    # scatterplot(y_test,model.predict(x_test),x_test)
 
 
 
