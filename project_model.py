@@ -2,7 +2,7 @@
 Title: Data Science Team Project
 Class: 2021-1 Data Science
 Member: 201533645 배성재
-        (학번) 김도균
+        201533631 김도균
         201633841 LEE KANG UK
 """
 
@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 # =========================== Function ===========================
@@ -74,29 +75,57 @@ def scatterplot(y,predict,data):
     plt.title("Confirmed & deceased")
     plt.show()
     return
+
+
+
 # =========================== Main ===========================
 # Read the test.csv files
 df = pd.read_csv("./test.csv")
 
+df.drop(['Unnamed: 0'], axis=1, inplace=True)
+
 #scaling & drop data
 standardScaler = StandardScaler()
-standardScaler.fit(df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1))
-x_scaled = standardScaler.transform(df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1))
+standardScaler.fit(df.drop(['confirmed','date','time'],axis = 1))
+x_scaled = standardScaler.transform(df.drop(['confirmed','date','time'],axis = 1))
 #x_scaled = df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1)
-print(df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
+print(df.drop(['confirmed','date','time'],axis = 1).columns)
+
+
+
+location = df['code'].drop_duplicates().to_numpy()
+
+for i in range(0, len(location)):
+    dft = df[df['code'] == location[i]]
+    print(dft)
+
+    # Heatmap code
+    corrMat = dft.corr()
+    feature = corrMat.index
+    ax = plt.axes()
+    ax.set_title(location[i])
+    
+    plt.figure(figsize=(11,11))
+    g = sns.heatmap(dft[feature].corr(), annot=True, cmap="RdYlGn", ax = ax)
+    
+    plt.show()
+
+
+# 1. 지역별로 테이블 분해
+# 2. 온도를 비교하여 분석
 
 #split data set
-x_train, x_test, y_train, y_test = train_test_split(x_scaled, df['confirmed'], test_size=0.2, shuffle=True, random_state=34)
+# x_train, x_test, y_train, y_test = train_test_split(x_scaled, df['confirmed'], test_size=0.2, shuffle=True, random_state=34)
 
 
-#linear regression
-model = LinearRegression()
-model.fit(x_train, y_train)
-print("linear regression score : " ,model.score(x_test,y_test))
-print(model.coef_)
+# #linear regression
+# model = LinearRegression()
+# model.fit(x_train, y_train)
+# print("linear regression score : " ,model.score(x_test,y_test))
+# print(model.coef_)
 
-coefplot(model.coef_, df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
-scatterplot(y_test,model.predict(x_test),x_test)
+# coefplot(model.coef_, df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
+# scatterplot(y_test,model.predict(x_test),x_test)
 
 
 
