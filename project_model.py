@@ -84,24 +84,56 @@ df = pd.read_csv("./test.csv")
 
 df.drop(['Unnamed: 0'], axis=1, inplace=True)
 
+# 지역코드 따로 빼기 -> 각각 csv파일로 저장시키기
+location = df['code'].drop_duplicates()
+
+for i in range(0, len(location)):
+    temp = df[df['code'] == location[i]]
+    file_name = "location_" + str(location[i]) + ".csv"
+    temp.to_csv(file_name)
+
+# 지역별로 나눴던 csv 파일들을 dataframe으로 변환
+df_10000 = pd.read_csv("location_10000.csv")
+df_11000 = pd.read_csv("location_11000.csv")
+df_12000 = pd.read_csv("location_12000.csv")
+df_13000 = pd.read_csv("location_13000.csv")
+df_14000 = pd.read_csv("location_14000.csv")
+df_15000 = pd.read_csv("location_15000.csv")
+df_16000 = pd.read_csv("location_16000.csv")
+df_20000 = pd.read_csv("location_20000.csv")
+df_30000 = pd.read_csv("location_30000.csv")
+df_40000 = pd.read_csv("location_40000.csv")
+df_41000 = pd.read_csv("location_41000.csv")
+df_50000 = pd.read_csv("location_50000.csv")
+df_51000 = pd.read_csv("location_51000.csv")
+df_60000 = pd.read_csv("location_60000.csv")
+df_61000 = pd.read_csv("location_61000.csv")
+df_70000 = pd.read_csv("location_70000.csv")
+    
 #scaling & drop data
 standardScaler = StandardScaler()
 # standardScaler.fit(df.drop(['confirmed','date','time'],axis = 1))
-x_scaled = standardScaler.fit_transform(df.drop(['confirmed','date','time'],axis = 1))
+x_scaled = standardScaler.fit_transform(df_10000.drop(['confirmed','date','time'],axis = 1))
 #x_scaled = df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1)
-columns = df.drop(['confirmed','date','time'],axis = 1).columns
+columns = df_10000.drop(['confirmed','date','time'],axis = 1).columns
 
-df_scaled = pd.DataFrame(x_scaled, columns=columns)
+df_scaled_10000 = pd.DataFrame(x_scaled, columns=columns)
 
-location = df_scaled['code'].drop_duplicates().to_numpy()
+# split data set
+x_train, x_test, y_train, y_test = train_test_split(df_scaled_10000, df['confirmed'], test_size=0.2, shuffle=True, random_state=34)
+# linear regression
+model = LinearRegression()
+model.fit(x_train, y_train)
+print("linear regression score : " ,model.score(x_test,y_test))
+print(model.coef_)
+
 
 
 # 1. 지역별로 테이블 분해
-for i in range(0, len(location)):
-    dft = df_scaled[df_scaled['code'] == location[i]]
-    dfy = df[df_scaled['code'] == location[i]]
-    dfy = dfy['confirmed']
-    print(dfy)
+
+
+
+
     # 지역 내 누적값.
     # 지역별로 Preprocessing 다시 해야 함.
 
