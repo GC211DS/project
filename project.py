@@ -74,4 +74,41 @@ lblEncoder.fit(province)
 province_encoded = lblEncoder.transform(province)
 new_merged_df["province"] = province_encoded
 
-### Scaling, train/test split?
+
+print(new_merged_df)
+
+## Export
+# =========================== Main ===========================
+# Read the test.csv files
+
+# new_merged_df.drop(['Unnamed: 0'], axis=1, inplace=True)
+
+# 지역코드 따로 빼기 -> 각각 csv파일로 저장시키기
+location = new_merged_df['code'].drop_duplicates()
+
+print(len(location))
+
+for i in range(0, len(location)):
+    temp = new_merged_df[new_merged_df['code'] == location[i]]
+    file_name = "location_" + str(location[i]) + ".csv"
+
+    temp = pd.concat([temp], ignore_index = True)
+
+    # Confirmed 구하기
+    for j in range(len(temp)-1, 1, -1):
+        real = temp.iloc[j,2] - temp.iloc[j-1,2]
+        temp.iloc[j,2] = real
+
+    # Released 구하기
+    for j in range(len(temp)-1, 1, -1):
+        real = temp.iloc[j,3] - temp.iloc[j-1,3]
+        temp.iloc[j,3] = real
+
+    # Deceased 구하기
+    for j in range(len(temp)-1, 1, -1):
+        real = temp.iloc[j,4] - temp.iloc[j-1,4]
+        temp.iloc[j,4] = real
+
+    temp.drop(index=0, axis=0, inplace=True)
+    temp.to_csv(file_name)
+
