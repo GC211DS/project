@@ -9,6 +9,7 @@ Member: 201533645 배성재
 # =========================== Library ===========================
 ### Step 1. Import the libraries
 import pandas as pd
+from dateutil.rrule import weekday
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -59,7 +60,7 @@ print(weather_df.isnull().sum(), end="\n")
 
 # NaN값 채우기? (Delete or fill method) => Drop 하기!
 weather_df.dropna(axis=0, inplace=True)
-
+print(weather_df['province'].unique())
 # cf) Weather.csv 파일에서 date가 2020년도가 아닌 data들 drop하기
 drop_before_2020(weather_df)
 
@@ -93,6 +94,7 @@ for i in range(0, len(location)):
     file_name = "location_" + str(location[i]) + ".csv"
 
     temp = pd.concat([temp], ignore_index = True)
+    temp['target'] = temp['code']
 
     # Confirmed 구하기
     for j in range(len(temp)-1, 1, -1):
@@ -108,6 +110,21 @@ for i in range(0, len(location)):
     for j in range(len(temp)-1, 1, -1):
         real = temp.iloc[j,4] - temp.iloc[j-1,4]
         temp.iloc[j,4] = real
+
+    # Target 단계 구하기
+    for j in range(len(temp)-1, 0, -1):
+        if temp.iloc[j,2] >=  500:
+            temp.iloc[j,14] = 4
+        elif temp.iloc[j,2] >=  101:
+            temp.iloc[j,14] = 3
+        elif temp.iloc[j,2] >=  11:
+            temp.iloc[j,14] = 2
+        elif temp.iloc[j,2] >=  1:
+            temp.iloc[j,14] = 1
+        elif temp.iloc[j,2] ==  0:
+            temp.iloc[j,14] = 0
+
+
 
     temp.drop(index=0, axis=0, inplace=True)
     temp.to_csv(file_name)

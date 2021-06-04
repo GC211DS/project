@@ -8,9 +8,10 @@ Member: 201533645 배성재
 
 # =========================== Library ===========================
 ### Step 1. Import the libraries
-from numpy import mod
+import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -18,9 +19,12 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import BaggingRegressor
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import warnings
+warnings.filterwarnings('ignore')
 
 # =========================== Function ===========================
 """
@@ -36,49 +40,65 @@ def linear(x,y):
 
 """
 Name: coefplot
-Input: coef, column
+Input: coef, column,title
 Output: plt.show
 Desc: This function plot the coef with column name
 """
-def coefplot(results,column):
-    plt.title("Coef about column")
+def coefplot(results,column,title):
+    plt.title(title)
     plt.ylabel("Coef")
     plt.scatter(column, results, alpha=1, label="predict")
     return plt.show()
 
 """
-Name: scatterplot
-Input: y_test, predict by fitted model, dataset
+Name: barplot
+Input: data, title
 Output: None
-Desc: This function plot scatter plot about data
+Desc: This function barplot  about data
 """
-def scatterplot(y,predict,data):
+def barplot(data,title):
+    label = data.index
 
-    plt.scatter(data[:, 6], predict, alpha=0.4, label="predict")
-    plt.scatter(data[:, 6], y, alpha=0.4, label="Test data")
-    plt.legend()
-    plt.xlabel("precipitation")
-    plt.ylabel("Confirmed")
-    plt.title("Confirmed & Precipitation")
+    N = len(data.index)
+
+    index = np.arange(N)
+
+    alpha = 0.5
+
+    bar_width = 0.35
+
+    p1 = plt.bar(index, data['Score'],
+
+                 bar_width,
+
+                 color='b',
+
+                 alpha=alpha,
+
+                 label='Score')
+
+    p2 = plt.bar(index + bar_width, data['Cross Val Score'],
+
+                 bar_width,
+
+                 color='r',
+
+                 alpha=alpha,
+
+                 label='Cross_Vaildate')
+
+    plt.title(title, fontsize=20)
+
+    plt.ylabel('Accuracy', fontsize=18)
+
+    plt.xlabel('Model', fontsize=18)
+
+    plt.xticks(index, label, fontsize=10)
+
+    plt.legend((p1[0], p2[0]), ('Score', 'Cross_Vaildate'), fontsize=15)
+
     plt.show()
 
-
-
-    plt.scatter(data[:, 5], predict, alpha=0.4, label="predict")
-    plt.scatter(data[:, 5], y, alpha=0.4, label="Test data")
-    plt.legend()
-    plt.xlabel("Max_temp")
-    plt.ylabel("Confirmed")
-    plt.title("Confirmed & Max_temp")
-    plt.show()
-
-    plt.scatter(data[:, 1], predict, alpha=0.4, label="predict")
-    plt.scatter(data[:, 1], y, alpha=0.4, label="Test data")
-    plt.legend()
-    plt.xlabel("deceased")
-    plt.ylabel("Confirmed")
-    plt.title("Confirmed & deceased")
-    plt.show()
     return
 
 
@@ -105,92 +125,174 @@ df = [
 ]
     
 
-
-
-
-
-
-
-
+# Set location name
+location_name = ['Seoul', 'Busan', 'Daegu', 'Gwangju', 'Incheon', 'Daejeon', 'Ulsan',
+ 'Gyeonggi-do', 'Gangwon-do', 'Chungcheongbuk-do', 'Chungcheongnam-do',
+ 'Jeollabuk-do', 'Jeollanam-do', 'Gyeongsangbuk-do', 'Gyeongsangnam-do',
+ 'Jeju-do', 'Chunghceongbuk-do']
 
 # Heatmap code
 for i in range(0, len(df)):
 
     # scaling & drop data
     standardScaler = StandardScaler()
-    # standardScaler.fit(df.drop(['confirmed','date','time'],axis = 1))
-    x_scaled = standardScaler.fit_transform(df[i].drop(['confirmed','date','time'],axis = 1))
-    #x_scaled = df.drop(['confirmed','date','Unnamed: 0','time'],axis = 1)
-    columns = df[0].drop(['confirmed','date','time'],axis = 1).columns
+    x_scaled = standardScaler.fit_transform(df[i].drop(['date','time','target'],axis = 1))
+    columns = df[0].drop(['date','time','target'],axis = 1).columns
 
     df_scaled = pd.DataFrame(x_scaled, columns=columns)
-    df_scaled['confirmed'] = df[i]['confirmed']
+    df_scaled['target'] = df[i]['target']
 
     corrMat = df_scaled.corr()
     feature = corrMat.index
 
     ax = plt.axes()
-    ax.set_title(i)
-    
+
+    plt.title(location_name[i])
     plt.figure(figsize=(11,11))
     g = sns.heatmap(df_scaled[feature].corr(), annot=True, cmap="RdYlGn", ax = ax)
         
-    # plt.show()
+    plt.show()
 
-    
-    # split data set
-    # x_train, x_test, y_train, y_test = train_test_split(df_scaled_10000, df_10000['confirmed'], test_size=0.2, shuffle=True, random_state=34)
-    # # linear regression
-    # model = LinearRegression()
-    # model.fit(x_train, y_train)
-    # print("linear regression score : " ,model.score(x_test,y_test))
-    # print(model.coef_)
+
 
     # # 2. 온도를 비교하여 분석
 
     
     # split data set
     print(df_scaled)
-    X = df_scaled.drop(["confirmed", "Unnamed: 0", "released", "deceased", "code", "precipitation", "max_wind_speed", "most_wind_direction", "avg_relative_humidity", "province"], axis=1)
+    X = df_scaled.drop(["Unnamed: 0", "confirmed","released", "deceased", "code", "precipitation", "max_wind_speed", "most_wind_direction", "avg_relative_humidity", "province","target"], axis=1)
 
     print(X)
-    x_train, x_test, y_train, y_test = train_test_split(X, df_scaled['confirmed'], test_size=0.2, shuffle=True, random_state=34)
+    x_train, x_test, y_train, y_test = train_test_split(X, df_scaled['target'], test_size=0.2, shuffle=True, random_state=34)
+
+    # create dataframe for bar plot
+    data = pd.DataFrame({'Score': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                        'Cross Val Score': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+    data = pd.DataFrame(data, index=['LinearRegression','LogisticRegression','KNeighborsClassifier', 'DecisionTreeRegressor',
+                  'BaggingRegressor','AdaBoostRegressor','GradientBoostingRegressor'])
 
     #linear regression
     model = LinearRegression()
     model.fit(x_train, y_train)
     print("LinearRegression score : " ,model.score(x_test, y_test))
-    # print(model.coef_)
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of LinearRegression", np.mean(score))
+    title = location_name[i] + " LinearRegression coef"
+    coefplot(model.coef_, X.columns, title)
+    data.loc['LinearRegression']['Score'] = model.score(x_test, y_test)
+    data.loc['LinearRegression']['Cross Val Score'] = np.mean(score)
+
+    # Logistic regression
+    model = LogisticRegression()
+    model.fit(x_train, y_train)
+    print("LogisticRegression score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of Logistic", np.mean(score))
+    data.loc['LogisticRegression']['Score'] = model.score(x_test, y_test)
+    data.loc['LogisticRegression']['Cross Val Score'] = np.mean(score)
+
+
+    # KNeighborsClassifier
+    model = KNeighborsClassifier(n_neighbors = 4)
+    model.fit(x_train, y_train)
+
+    # params = {
+    #     'n_neighbors': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # }
+    #
+    # grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    # grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_) GridSearchCV 최적 하이퍼파라미터:  {'n_neighbors': 4}
+
+
+    print("KNeighborsClassifier score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of KNeighborsClassifier", np.mean(score))
+    data.loc['KNeighborsClassifier']['Score'] = model.score(x_test, y_test)
+    data.loc['KNeighborsClassifier']['Cross Val Score'] = np.mean(score)
 
     # Decision Tree Regressor
     model = DecisionTreeRegressor(max_depth=2)
     model.fit(x_train, y_train)
+    # params = {
+    #     'max_depth': [2, 4, 6, 8, 10]
+    # }
+    #
+    # grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    # grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_)  GridSearchCV 최적 하이퍼파라미터:  {'max_depth': 2}
     print("DecisionTreeRegressor score : " ,model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of DecisionTreeRegressor", np.mean(score))
+    data.loc['DecisionTreeRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['DecisionTreeRegressor']['Cross Val Score'] = np.mean(score)
 
     # BaggingRegressor Ensemble
-    model = BaggingRegressor(n_estimators=10000, max_samples=1, max_features=1,
+    model = BaggingRegressor( max_samples=0.5, max_features=0.5, bootstrap_features= True,
         base_estimator=DecisionTreeRegressor(max_depth=2), bootstrap=True)
+    # params = {
+    #     "max_samples": [0.5, 1.0],
+    #     "max_features": [0.5, 1.0],
+    #     "bootstrap": [True, False],
+    #     "bootstrap_features": [True, False]}
+    #
+    #
+    # grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    # grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_)
+    # GridSearchCV 최적 하이퍼파라미터: {'bootstrap': True, 'bootstrap_features': True, 'max_features': 0.5, 'max_samples': 0.5}
 
     model.fit(x_train, y_train)
     print("BaggingRegressor score : " ,model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of BaggingRegressor", np.mean(score))
+    data.loc['BaggingRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['BaggingRegressor']['Cross Val Score'] = np.mean(score)
 
     # AdaBoostRegressor Ensemble
-    model = AdaBoostRegressor(n_estimators=10000, 
+    model = AdaBoostRegressor(n_estimators=1,
         base_estimator=DecisionTreeRegressor(max_depth=2), learning_rate=1)
-
+    # params = {
+    #     'n_estimators': [1,2,3,4,5,6,7,8,9,10,50,100,200,300,400,500,1000]
+    # }
+    #
+    # grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    # grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_) GridSearchCV 최적 하이퍼파라미터:  {'n_estimators': 1}
     model.fit(x_train, y_train)
     print("AdaBoostRegressor score : " ,model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of AdaBoostRegressor", np.mean(score))
+    data.loc['AdaBoostRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['AdaBoostRegressor']['Cross Val Score'] = np.mean(score)
 
     # GradientBoostingRegressor Ensemble
-    model = GradientBoostingRegressor(n_estimators=10000, learning_rate=0.01)
+    model = GradientBoostingRegressor(n_estimators=1, learning_rate=0.01)
 
+    # params = {
+    #     'n_estimators': [1,2,3,4,5,6,7,8,9,10,50,100,200,300,400,500,1000],
+    #     'learning_rate': [0.01,0.1,1]
+    #
+    # }
+    #
+    # grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    # grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_) GridSearchCV 최적 하이퍼파라미터:  {'learning_rate': 0.01, 'n_estimators': 1}
     model.fit(x_train, y_train)
     print("GradientBoostingRegressor score : " ,model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=3)
+    print("cross_val score of GradientBoostingRegressor", np.mean(score))
+    data.loc['GradientBoostingRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['GradientBoostingRegressor']['Cross Val Score'] = np.mean(score)
 
-    plt.show()
 
-    # coefplot(model.coef_, df_scaled.drop(['confirmed','date','Unnamed: 0','time'],axis = 1).columns)
-    # scatterplot(y_test,model.predict(x_test),x_test)
+    barplot(data,location_name[i])
+
 
 
 
