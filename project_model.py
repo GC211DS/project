@@ -375,7 +375,7 @@ for i in range(0, len(df)):
     data.loc['GradientBoostingRegressor']['Cross Val Score'] = np.mean(score)
 
 
-    # barplot(data,location_name[i])
+    #barplot(data,location_name[i])
 
 
 

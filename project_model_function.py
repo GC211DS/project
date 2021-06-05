@@ -1,0 +1,478 @@
+"""
+Title: Data Science Team Project
+Class: 2021-1 Data Science
+Member: 201533645 배성재
+        201533631 김도균
+        201633841 LEE KANG UK
+"""
+
+# =========================== Library ===========================
+### Step 1. Import the libraries
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.model_selection import GridSearchCV
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+
+# =========================== Function ===========================
+
+"""
+Name: coefplot
+Input: coef, column,title
+Output: plt.show
+Desc: This function plot the coef with column name
+"""
+def coefplot(results,column,title):
+    plt.title(title)
+    plt.ylabel("Coef")
+    plt.scatter(column, results, alpha=1, label="predict")
+    return plt.show()
+
+"""
+Name: barplot
+Input: data, title
+Output: None
+Desc: This function barplot  about data
+"""
+def barplot(data,title):
+    label = data.index
+
+    N = len(data.index)
+
+    index = np.arange(N)
+
+    alpha = 0.5
+
+    bar_width = 0.35
+
+    p1 = plt.bar(index, data['Score'],
+
+                 bar_width,
+
+                 color='b',
+
+                 alpha=alpha,
+
+                 label='Score')
+
+    p2 = plt.bar(index + bar_width, data['Cross Val Score'],
+
+                 bar_width,
+
+                 color='r',
+
+                 alpha=alpha,
+
+                 label='Cross_Vaildate')
+
+    plt.title(title, fontsize=20)
+
+    plt.ylabel('Accuracy', fontsize=18)
+
+    plt.xlabel('Model', fontsize=18)
+
+    plt.xticks(index, label, fontsize=10)
+
+    plt.legend((p1[0], p2[0]), ('Score', 'Cross_Vaildate'), fontsize=15)
+
+    plt.show()
+
+    return
+
+"""
+Name: coefplot
+Input: coef, column,title
+Output: plt.show
+Desc: This function plot the coef with column name
+"""
+def coefplot(results,column,title):
+    plt.title(title)
+    plt.ylabel("Coef")
+    plt.scatter(column, results, alpha=1, label="predict")
+    return plt.show()
+"""
+Name: scaler
+Input: df(dataframe), index(index of province)
+Output: df_scaled
+Desc: This function scaled the dataframe by StandardScaler
+"""
+def scaler(df,index):
+    x_scaled = standardScaler.fit_transform(df[i].drop(['date', 'time', 'target'], axis=1))
+    columns = df[0].drop(['date', 'time', 'target'], axis=1).columns
+    df_scaled = pd.DataFrame(x_scaled, columns=columns)
+    df_scaled['target'] = df[i]['target']
+    return df_scaled
+
+"""
+Name: heatmap
+Input: df(dataframe), index(index of province)
+Output: df_scaled
+Desc: This function scaled the dataframe by StandardScaler
+"""
+def heatmap(df_scaled):
+    corrMat = df_scaled.corr()
+    feature = corrMat.index
+
+    ax = plt.axes()
+
+    plt.title(location_name[i])
+    g = sns.heatmap(df_scaled[feature].corr(), annot=True, cmap="RdYlGn", ax=ax)
+    plt.show()
+
+"""
+Name: linear
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train LinearRegression model and predict
+"""
+def linear(x_train,y_train,x_test,y_test,data):
+    model = LinearRegression()
+    model.fit(x_train, y_train)
+    print("LinearRegression score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of LinearRegression", np.mean(score))
+    title = location_name[i] + " LinearRegression coef"
+
+    coefplot(model.coef_, X.columns, title)
+
+    data.loc['LinearRegression']['Score'] = model.score(x_test, y_test)
+    data.loc['LinearRegression']['Cross Val Score'] = np.mean(score)
+    return data
+
+
+"""
+Name: poly
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train PolynomialFeatures model and predict
+"""
+def poly(x_train,y_train,x_test,y_test,data):
+    poly_reg = PolynomialFeatures(degree=7)
+    X_poly = poly_reg.fit_transform(x_train)
+    model = LinearRegression()
+    model.fit(X_poly, y_train)
+    print("PolynomialRegression score : ", model.score(poly_reg.fit_transform(x_test), y_test))
+    score = cross_val_score(model, poly_reg.fit_transform(x_test), y_test, cv=crossFold)
+    print("cross_val score of PolynomialRegression", np.mean(score))
+    data.loc['PolynomialRegression']['Score'] = model.score(poly_reg.fit_transform(x_test), y_test)
+    data.loc['PolynomialRegression']['Cross Val Score'] = np.mean(score)
+    return data
+
+"""
+Name: logistic
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train LogisticRegression model and predict
+"""
+def logistic(x_train,y_train,x_test,y_test,data):
+    model = LogisticRegression()
+    model.fit(x_train, y_train)
+    print("LogisticRegression score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of LogisticRegression", np.mean(score))
+    data.loc['LogisticRegression']['Score'] = model.score(x_test, y_test)
+    data.loc['LogisticRegression']['Cross Val Score'] = np.mean(score)
+    return data
+
+"""
+Name: kneighbor
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train KNeighborsClassifier model and predict with GridSearchCV
+"""
+def kneighbor(x_train,y_train,x_test,y_test,data):
+    model = KNeighborsClassifier()
+
+    params = {
+        'n_neighbors': np.arange(1, 15)
+    }
+    grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=crossFold, verbose=1)
+    grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_)
+    # Conclusion: GridSearchCV 최적 하이퍼파라미터:  {'n_neighbors': 4}
+    # avg_temp 만 있을 때 Conclusion: GridSearchCV 최적 하이퍼파라미터:  {'n_neighbors': 6}
+
+    model = KNeighborsClassifier(n_neighbors=grid_cv.best_params_['n_neighbors'])
+    model.fit(x_train, y_train)
+
+    print("KNeighborsClassifier score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of KNeighborsClassifier", np.mean(score))
+    data.loc['KNeighborsClassifier']['Score'] = model.score(x_test, y_test)
+    data.loc['KNeighborsClassifier']['Cross Val Score'] = np.mean(score)
+    return data
+
+"""
+Name: decisionTree
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train DecisionTreeRegressor model and predictwith GridSearchCV
+"""
+def decisionTree(x_train,y_train,x_test,y_test,data):
+    model = DecisionTreeRegressor()
+    params = {
+        'max_depth': np.arange(1, 10)
+    }
+
+    grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_)  GridSearchCV 최적 하이퍼파라미터:  {'max_depth': 2}
+    model = DecisionTreeRegressor(max_depth=grid_cv.best_params_['max_depth'])
+    model.fit(x_train, y_train)
+    print("DecisionTreeRegressor score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of DecisionTreeRegressor", np.mean(score))
+    data.loc['DecisionTreeRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['DecisionTreeRegressor']['Cross Val Score'] = np.mean(score)
+    return data
+
+"""
+Name: bagging
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train BaggingRegressor model and predict with GridSearchCV
+"""
+def bagging(x_train,y_train,x_test,y_test,data):
+    model = BaggingRegressor(max_samples=0.5, max_features=0.5, bootstrap_features=True,
+                             base_estimator=DecisionTreeRegressor(max_depth=2), bootstrap=True)
+    params = {
+        "max_samples": [0.5, 1.0],
+        "max_features": [0.5, 1.0],
+        "bootstrap": [True, False],
+        "bootstrap_features": [True, False]}
+
+    grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_)
+    # GridSearchCV 최적 하이퍼파라미터: {'bootstrap': True, 'bootstrap_features': True, 'max_features': 0.5, 'max_samples': 0.5}
+    model = BaggingRegressor(max_samples=grid_cv.best_params_['max_samples'],
+                             max_features=grid_cv.best_params_['max_features'],
+                             bootstrap_features=grid_cv.best_params_['bootstrap_features'],
+                             base_estimator=DecisionTreeRegressor(max_depth=2),
+                             bootstrap=grid_cv.best_params_['bootstrap'])
+
+    model.fit(x_train, y_train)
+    print("BaggingRegressor score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of BaggingRegressor", np.mean(score))
+    data.loc['BaggingRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['BaggingRegressor']['Cross Val Score'] = np.mean(score)
+    return data
+
+"""
+Name: adaboost
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train AdaBoostRegressor model and predict with GridSearchCV
+"""
+def adaboost(x_train,y_train,x_test,y_test,data):
+    model = AdaBoostRegressor(n_estimators=1,
+                              base_estimator=DecisionTreeRegressor(max_depth=2))
+    params = {
+        'n_estimators':[1,5,10,20,30,40,50,100,200,300,400,500,1000]
+    }
+
+    grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_) GridSearchCV 최적 하이퍼파라미터:  {'n_estimators': 1}
+    model = AdaBoostRegressor(n_estimators=grid_cv.best_params_['n_estimators'])
+
+    model.fit(x_train, y_train)
+    print("AdaBoostRegressor score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of AdaBoostRegressor", np.mean(score))
+    data.loc['AdaBoostRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['AdaBoostRegressor']['Cross Val Score'] = np.mean(score)
+    return data
+
+
+"""
+Name: gradient
+Input: x_train,y_train,x_test,y_test,data
+Output: data
+Desc: This function train GradientBoostingRegressor model and predict with GridSearchCV
+"""
+def gradient(x_train,y_train,x_test,y_test,data):
+    model = GradientBoostingRegressor(n_estimators=1, learning_rate=0.01)
+
+    params = {
+        'n_estimators': [1,2,3,4,5,6,7,8,9,10,50,100,200,300,400,500,1000],
+        'learning_rate': [0.01,0.1,1]
+
+    }
+
+    grid_cv = GridSearchCV(model, param_grid=params, scoring='accuracy', cv=5, verbose=1)
+    grid_cv.fit(x_train, y_train)
+    # print('GridSearchCV 최고 평균 정확도 수치: {:.4f}'.format(grid_cv.best_score_))
+    # print('GridSearchCV 최적 하이퍼파라미터: ', grid_cv.best_params_) GridSearchCV 최적 하이퍼파라미터:  {'learning_rate': 0.01, 'n_estimators': 1}
+    model = GradientBoostingRegressor(n_estimators=grid_cv.best_params_['n_estimators'],
+                                      learning_rate=grid_cv.best_params_['learning_rate'])
+
+    model.fit(x_train, y_train)
+    print("GradientBoostingRegressor score : ", model.score(x_test, y_test))
+    score = cross_val_score(model, x_test, y_test, cv=crossFold)
+    print("cross_val score of GradientBoostingRegressor", np.mean(score))
+    data.loc['GradientBoostingRegressor']['Score'] = model.score(x_test, y_test)
+    data.loc['GradientBoostingRegressor']['Cross Val Score'] = np.mean(score)
+    return data
+
+# 지역별로 나눴던 csv 파일들을 dataframe으로 변환
+df = [
+    pd.read_csv("location_10000.csv"),
+    pd.read_csv("location_11000.csv"),
+    pd.read_csv("location_12000.csv"),
+    pd.read_csv("location_13000.csv"),
+    pd.read_csv("location_14000.csv"),
+    pd.read_csv("location_15000.csv"),
+    pd.read_csv("location_16000.csv"),
+    pd.read_csv("location_20000.csv"),
+    pd.read_csv("location_30000.csv"),
+    pd.read_csv("location_40000.csv"),
+    pd.read_csv("location_41000.csv"),
+    pd.read_csv("location_50000.csv"),
+    pd.read_csv("location_51000.csv"),
+    pd.read_csv("location_60000.csv"),
+    pd.read_csv("location_61000.csv"),
+    pd.read_csv("location_70000.csv"),
+]
+
+
+# Set location name
+location_name = ['Seoul', 'Busan', 'Daegu', 'Gwangju', 'Incheon', 'Daejeon', 'Ulsan',
+ 'Gyeonggi-do', 'Gangwon-do', 'Chungcheongbuk-do', 'Chungcheongnam-do',
+ 'Jeollabuk-do', 'Jeollanam-do', 'Gyeongsangbuk-do', 'Gyeongsangnam-do',
+ 'Jeju-do', 'Chunghceongbuk-do']
+
+# Heatmap code
+for i in range(0, len(df)):
+
+    # scaling & drop data
+    standardScaler = StandardScaler()
+
+    # Scaled data
+    df_scaled = scaler(df,i)
+
+    #  No scaled data
+    df_no_scaled = df[i].drop(['date','time'], axis=1)
+
+    #  Heatmap
+    heatmap(df_scaled)
+
+    # # 2. 온도를 비교하여 분석
+
+    # set crossfold
+    crossFold = 7
+
+
+    # split data set
+    print(df_scaled)
+
+    # Drop all features except temp
+    X = df_scaled.drop(["Unnamed: 0", "confirmed","released", "deceased", "code", "precipitation", "max_wind_speed", "most_wind_direction", "avg_relative_humidity", "province", "target"], axis=1)
+
+    print(X)
+    x_train, x_test, y_train, y_test = train_test_split(X, df_scaled['target'], test_size=0.2, shuffle=True, random_state=34)
+
+    # create dataframe for bar plot
+    data = pd.DataFrame({'Score': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                        'Cross Val Score': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]})
+    data = pd.DataFrame(data, index=['LinearRegression','PolynomialRegression','LogisticRegression','KNeighborsClassifier', 'DecisionTreeRegressor',
+                  'BaggingRegressor','AdaBoostRegressor','GradientBoostingRegressor'])
+
+
+    # TODO:
+    # 각 지역별 모델 스코어 평균
+    # 가장 평균이 높은 모델로 선택
+
+    # linear regression
+    data = linear(x_train, y_train, x_test, y_test, data)
+
+
+    ##############################
+    # https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=tt2t2am1118&logNo=221182074409
+    # Polynomial Regression
+    data = poly(x_train,y_train,x_test,y_test,data)
+
+    # # Plot result
+    # plt.figure(figsize=(18,8))
+    # xbar = np.arange(-5, 35, 0.01)
+    # plt.plot(xbar, model.predict(poly_reg.fit_transform(xbar.reshape(-1,1))), "r", df_scaled['avg_temp'].to_numpy(), df_scaled['target'].to_numpy(), "bo")
+    # plt.axis([-5, 35, 0, 7])
+    # plt.title("PolynomialRegression: " + location_name[i])
+    # plt.show()
+
+
+
+    ##############################
+    # Logistic regression
+
+    data = logistic(x_train, y_train, x_test, y_test, data)
+
+    # TODO:
+    # coef plot 상 avg_temp가 가장 의미있음
+    # 이거만 가지고 학습 다시 진행
+    # 나온 데이터 predict ->  plot
+
+    # # Plot result
+    # plt.figure(figsize=(18,8))
+    # xbar = np.arange(-5, 35, 0.01)
+    # ybar = model.predict(xbar.reshape(-1,1))
+    # plt.plot(xbar, ybar, "r", df_scaled['avg_temp'].to_numpy(), df_scaled['target'].to_numpy(), "bo")
+    # plt.axis([-5, 35, 0, 7])
+    # plt.title("LogisticRegression: " + location_name[i])
+    # plt.show()
+
+
+    # KNeighborsClassifier
+    data =  kneighbor(x_train, y_train, x_test, y_test, data)
+
+
+    # # Plot result
+    # plt.figure(figsize=(18,8))
+    # xbar = np.arange(-5, 35, 0.01)
+    # ybar = model.predict(xbar.reshape(-1,1))
+    # plt.plot(xbar, ybar, "r", df_scaled['avg_temp'].to_numpy(), df_scaled['target'].to_numpy(), "go")
+    # plt.axis([-5, 35, 0, 7])
+    # plt.title("KNeighborsClassifier: " + location_name[i])
+    # plt.show()
+
+
+    # Decision Tree Regressor
+    data = decisionTree(x_train, y_train, x_test, y_test, data)
+
+
+    # BaggingRegressor Ensemble
+    data = bagging(x_train, y_train, x_test, y_test, data)
+
+
+    # AdaBoostRegressor Ensemble
+    data = adaboost(x_train,y_train,x_test,y_test,data)
+
+
+    # GradientBoostingRegressor Ensemble
+    data = gradient(x_train, y_train, x_test, y_test, data)
+
+
+    # plot barchart
+    barplot(data,location_name[i])
+
+
+
+
