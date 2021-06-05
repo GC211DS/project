@@ -114,8 +114,14 @@ for i in range(0, len(location)):
     # Target 단계 구하기
     for j in range(len(temp)-1, 0, -1):
         if temp.iloc[j,2] >=  500:
-            temp.iloc[j,14] = 4
+            temp.iloc[j,14] = 7
+        elif temp.iloc[j,2] >=  251:
+            temp.iloc[j,14] = 6
         elif temp.iloc[j,2] >=  101:
+            temp.iloc[j,14] = 5
+        elif temp.iloc[j,2] >=  51:
+            temp.iloc[j,14] = 4
+        elif temp.iloc[j,2] >=  26:
             temp.iloc[j,14] = 3
         elif temp.iloc[j,2] >=  11:
             temp.iloc[j,14] = 2
@@ -124,7 +130,9 @@ for i in range(0, len(location)):
         elif temp.iloc[j,2] ==  0:
             temp.iloc[j,14] = 0
 
-
+    # TODO:
+    # 각 지역별 비닝한 기준을 보여줄 자료 필요
+    # 지역별 Scatter plot 시각화하면 될지도?
 
     temp.drop(index=0, axis=0, inplace=True)
     temp.to_csv(file_name)
