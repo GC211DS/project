@@ -1,8 +1,8 @@
 """
 Title: Data Science Team Project
 Class: 2021-1 Data Science
-Member: 201533645 배성재
-        201533631 김도균
+Member: 201533645 BAE SEOUNG JAE
+        201533631 KIM DO KYOON
         201633841 LEE KANG UK
 """
 
